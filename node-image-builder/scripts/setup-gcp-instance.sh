@@ -2,9 +2,10 @@
 
 packer_version="$1"
 
-wget -q https://releases.hashicorp.com/packer/${packer_version}/packer_${packer_version}_linux_amd64.zip && \
-unzip packer_${packer_version}_linux_amd64.zip && \
-mv packer /usr/local/bin/packerio && \
+echo "Installing Packer"
+wget -q https://releases.hashicorp.com/packer/${packer_version}/packer_${packer_version}_linux_amd64.zip
+unzip packer_${packer_version}_linux_amd64.zip
+sudo mv packer /usr/local/bin/packerio
 chmod +x /usr/local/bin/packerio
 rm packer_${packer_version}_linux_amd64.zip
 
@@ -40,5 +41,23 @@ while ! echo $result | grep "RUNNING" &>/dev/null; do
 done
 
 echo "Mounting shasta-cd-repo"
-mkdir -p /mnt/shasta-cd-repo
-mount -o discard,defaults /dev/sdb /mnt/shasta-cd-repo
+username=$(whoami)
+sudo mkdir -p /mnt/shasta-cd-repo
+sudo mount -o discard,defaults /dev/sdb /mnt/shasta-cd-repo
+sudo chown -R $username:$username /mnt/shasta-cd-repo
+sudo chmod -R 0777 /mnt/shasta-cd-repo
+
+echo "Configuring SSH Keep-Alive"
+sudo /sbin/sysctl -w net.ipv4.tcp_keepalive_time=60 net.ipv4.tcp_keepalive_intvl=60 net.ipv4.tcp_keepalive_probes=5
+cat > /tmp/sshd_config <<EOF
+TCPKeepAlive yes
+ClientAliveInterval 60
+ClientAliveCountMax 240
+EOF
+cat > /tmp/ssh_config <<EOF
+ServerAliveInterval 60
+EOF
+sudo mv /tmp/sshd_config /etc/ssh/sshd_config
+sudo mv /tmp/ssh_config /etc/ssh/ssh_config
+sudo service sshd restart &
+exit 0
