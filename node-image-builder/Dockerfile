@@ -8,9 +8,7 @@ RUN (wget -qO- https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${
 
 COPY scripts/build-on-gcp.sh /srv/build-on-gcp.sh
 COPY scripts/setup-gcp-instance.sh /srv/setup-gcp-instance.sh
-COPY scripts/disable-selinux.sh /srv/disable-selinux.sh
 RUN chmod +x /srv/build-on-gcp.sh && \
-    chmod +x /srv/setup-gcp-instance.sh && \
-    chmod +x /srv/disable-selinux.sh
+    chmod +x /srv/setup-gcp-instance.sh
 
 ENTRYPOINT [""]

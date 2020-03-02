@@ -59,10 +59,11 @@ if [ -d $(pwd)/packer_cache ]; then
   mv $(pwd)/packer_cache /tmp/
 fi
 gcloud compute scp $(pwd) builder@$instance_name:/tmp/build-src --recurse --zone $zone --project $project_id
-gcloud compute scp $GOOGLE_APPLICATION_CREDENTIALS builder@$instance_name:/tmp/build-src/key.json --zone $zone --project $project_id
+gcloud compute scp $GOOGLE_APPLICATION_CREDENTIALS builder@$instance_name:/tmp/key.json --zone $zone --project $project_id
 cat > /tmp/build.sh <<EOF
 #!/bin/bash
-export GOOGLE_APPLICATION_CREDENTIALS=/tmp/build-src/key.json
+export GOOGLE_APPLICATION_CREDENTIALS=/tmp/key.json
+gcloud auth  activate-service-account --key-file /tmp/key.json
 cd /tmp/build-src
 $@
 EOF
