@@ -1,5 +1,5 @@
 # container image that will be used by jenkins to run tests/builds, etc.
-FROM golang:1.12-alpine
+FROM golang:1.13-alpine
 
 ENV GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
 
