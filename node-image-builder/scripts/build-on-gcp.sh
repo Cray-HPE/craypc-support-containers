@@ -8,7 +8,7 @@ fi
 if [ -z "$PROJECT_SUBNET" ]; then
   PROJECT_SUBNET="default-network-us-central1"
 fi
-source_disk_image_name="node-image-builder"
+source_disk_image_name="https://www.googleapis.com/compute/v1/projects/vshasta-cray/global/images/node-image-builder"
 instance_name="node-image-builder-$(date +%s)"
 zone="us-central1-a"
 
