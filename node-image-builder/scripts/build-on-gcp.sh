@@ -8,6 +8,9 @@ fi
 if [ -z "$PROJECT_SUBNET" ]; then
   PROJECT_SUBNET="default-network-us-central1"
 fi
+if [ -z "$SERVICE_ACCOUNT" ]; then
+  SERVICE_ACCOUNT="1015742806632-compute@developer.gserviceaccount.com"
+fi
 source_disk_image_name="https://www.googleapis.com/compute/v1/projects/vshasta-cray/global/images/node-image-builder"
 instance_name="node-image-builder-$(date +%s)"
 zone="us-central1-a"
@@ -51,6 +54,7 @@ gcloud compute instances create $instance_name \
   --image $source_disk_image_name \
   --min-cpu-platform='Intel Haswell' \
   --scopes='https://www.googleapis.com/auth/cloud-platform' \
+  --service-account=$SERVICE_ACCOUNT \
   --subnet $PROJECT_SUBNET
 
 echo "Setting up the GCP builder instance"
