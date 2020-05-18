@@ -11,7 +11,7 @@ fi
 if [ -z "$SERVICE_ACCOUNT" ]; then
   SERVICE_ACCOUNT="1015742806632-compute@developer.gserviceaccount.com"
 fi
-source_disk_image_name="https://www.googleapis.com/compute/v1/projects/vshasta-cray/global/images/node-image-builder"
+source_disk_image_family="https://www.googleapis.com/compute/v1/projects/vshasta-cray/global/images/family/node-image-builder"
 instance_name="node-image-builder-$(date +%s)"
 zone="us-central1-a"
 
@@ -51,7 +51,8 @@ gcloud compute instances create $instance_name \
   --machine-type=n1-standard-8 \
   --boot-disk-size=2048GB \
   --boot-disk-type=pd-ssd \
-  --image $source_disk_image_name \
+  --image-project vshasta-cray \
+  --image-family $source_disk_image_family \
   --min-cpu-platform='Intel Haswell' \
   --scopes='https://www.googleapis.com/auth/cloud-platform' \
   --service-account=$SERVICE_ACCOUNT \
@@ -79,7 +80,9 @@ gcloud compute scp /tmp/build.sh builder@$instance_name:/tmp/build.sh --recurse 
 gcloud compute ssh --zone $zone --project $PROJECT_ID builder@$instance_name -- 'mkdir -p /tmp/build-src/http && ln -s /mnt/shasta-cd-repo /tmp/build-src/http/shasta-cd-repo'
 echo "Running operation"
 gcloud compute ssh --ssh-flag="-ServerAliveInterval=30" --zone $zone --project $PROJECT_ID builder@$instance_name -- 'chmod +x /tmp/build.sh && /tmp/build.sh'
-echo "Syncing .build contents back"
-gcloud compute scp builder@$instance_name:/tmp/build-src/.build $(pwd)/ --recurse --zone $zone --project $PROJECT_ID || true
+if [[ "$SKIP_SYNC_BACK" != true ]]; then
+  echo "Syncing .build contents back"
+  gcloud compute scp builder@$instance_name:/tmp/build-src/.build $(pwd)/ --recurse --zone $zone --project $PROJECT_ID || true
+fi
 
 exit 0
