@@ -15,6 +15,10 @@ if [ -z "$git_commit" ]; then
   echo "Error: second argument to the release script should be the git commit of release candidates"
   exit 1
 fi
+if [ -z "$release_version" ]; then
+  echo "Error: third argument to the release script should be the release version, with or without a pre-release version attached"
+  exit 1
+fi
 if [ -z "$google_cloud_project" ]; then
   echo "Error: fourth argument to the release script should be the google project housing release candidate images"
   exit 1
