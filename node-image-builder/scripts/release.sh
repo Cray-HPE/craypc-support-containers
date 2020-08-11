@@ -45,6 +45,10 @@ if echo "$release_version" | grep '-' &>/dev/null; then
   destination_artifact_repo="node-images-unstable-local"
 fi
 promote_destination_path="/${destination_artifact_repo}/shasta/${image_name}/${release_version}"
+if curl -s -I ${artifacts_root_uri}${promote_destination_path} 2>&1 | grep '302 Found'; then
+  echo "Found existing promoted artifact at $promote_destination_path, not promoting anything"
+  exit 1
+fi
 echo "Getting all artifacts at ${promote_source_path}"
 for artifact_file in $(curl ${artifacts_root_uri}/api/storage${promote_source_path} | jq -r .children[].uri); do
   promoted_artifact_file=${artifact_file/${promote_source_version}/${release_version}}
