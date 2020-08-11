@@ -39,11 +39,13 @@ if [ -z "$promote_source_path" ]; then
 fi
 
 promote_source_version="${git_commit}-${max_build_number}"
-
 destination_artifact_repo="node-images-stable-local"
+promote_destination_image_family="vshasta-${image_name}"
 if echo "$release_version" | grep '-' &>/dev/null; then
   destination_artifact_repo="node-images-unstable-local"
+  promote_destination_image_family="vshasta-${image_name}-rc"
 fi
+
 promote_destination_path="/${destination_artifact_repo}/shasta/${image_name}/${release_version}"
 if curl -s -I ${artifacts_root_uri}${promote_destination_path} 2>&1 | grep '302 Found'; then
   echo "Found existing promoted artifact at $promote_destination_path, not promoting anything"
@@ -60,7 +62,6 @@ done
 
 promote_source_image="vshasta-${image_name}-${promote_source_version}"
 promote_destination_image="vshasta-${image_name}-${release_version//./-}"
-promote_destination_image_family="vshasta-${image_name}"
 echo "Promoting Google Cloud image ${promote_source_image} to ${promote_destination_image} in project/family ${google_cloud_project}/${promote_destination_image_family}..."
 gcloud --project $google_cloud_project compute images create \
   --source-image $promote_source_image \
