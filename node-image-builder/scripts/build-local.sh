@@ -1,21 +1,32 @@
 #!/bin/bash
 
+set -e
+
 if [ -z "$USERNAME" ]; then
   echo "Error: USERNAME environment variable should be set as username/whoami"
   exit 1
 fi
 
+function cleanup() {
+  exit_status=$?
+  echo "Cleaning up..."
+  ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder node-images-builder@172.30.86.248 -- rm -rf ~/${USERNAME}
+  exit $exit_status
+}
+trap cleanup EXIT
+
 cat > $(pwd)/r.sh <<EOF
 #!/bin/bash
+chmod -R 0777 .
 $@
-chmod -R 0777 .artifacts
+chmod -R 0777 .
 EOF
 chmod +x $(pwd)/r.sh
 rsync -avz --exclude .git --exclude .artifacts --exclude packer_cache --delete \
   -e "ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder" \
   $(pwd)/ node-images-builder@172.30.86.248:~/${USERNAME}/
 
-( ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder node-images-builder@172.30.86.248 /bin/bash -c "docker rm -f node-images-builder-${USERNAME}" )
+( ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder node-images-builder@172.30.86.248 /bin/bash -c "docker rm -f node-images-builder-${USERNAME}" &>/dev/null )
 ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder node-images-builder@172.30.86.248 /bin/bash -c "cd ~/${USERNAME} && \
   docker run --rm --name node-images-builder-${USERNAME} \
   -v ~/${USERNAME}:/workspace \
@@ -28,3 +39,5 @@ rm $(pwd)/r.sh
 rsync -avz \
   -e "ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder" \
   node-images-builder@172.30.86.248:~/${USERNAME}/.artifacts/ $(pwd)/.artifacts/
+
+exit 0
