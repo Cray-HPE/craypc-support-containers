@@ -9,24 +9,26 @@ fi
 
 function cleanup() {
   exit_status=$?
-  echo "Cleaning up..."
-  ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder node-images-builder@172.30.86.248 -- rm -rf ~/${USERNAME}
+  echo "Cleaning up for user ${USERNAME}..."
+  ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder node-images-builder@172.30.86.248 /home/node-images-builder/rm-local-build.sh ${USERNAME} || true
+  ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder node-images-builder@172.30.86.248 docker rm -f node-images-builder-${USERNAME} || true
   exit $exit_status
 }
 trap cleanup EXIT
 
+ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder node-images-builder@172.30.86.248 /home/node-images-builder/rm-local-build.sh ${USERNAME} || true
+
 cat > $(pwd)/r.sh <<EOF
 #!/bin/bash
-chmod -R 0777 .
 $@
-chmod -R 0777 .
+chmod -R 0777 ./.artifacts
 EOF
 chmod +x $(pwd)/r.sh
 rsync -avz --exclude .git --exclude .artifacts --exclude packer_cache --delete \
   -e "ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder" \
   $(pwd)/ node-images-builder@172.30.86.248:~/${USERNAME}/
 
-( ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder node-images-builder@172.30.86.248 /bin/bash -c "docker rm -f node-images-builder-${USERNAME}" &>/dev/null )
+ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder node-images-builder@172.30.86.248 docker rm -f node-images-builder-${USERNAME} || true
 ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder node-images-builder@172.30.86.248 /bin/bash -c "cd ~/${USERNAME} && \
   docker run --rm --name node-images-builder-${USERNAME} \
   -v ~/${USERNAME}:/workspace \
