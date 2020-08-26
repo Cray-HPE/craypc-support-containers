@@ -7,6 +7,9 @@ if [ -z "$USERNAME" ]; then
   exit 1
 fi
 
+SYNC_BACK_FILES=${SYNC_BACK_FILES:-*}
+echo $SYNC_BACK_FILES | tr "," "\n" > $(pwd)/rsync-back-include
+
 function cleanup() {
   exit_status=$?
   echo "Cleaning up for user ${USERNAME}..."
@@ -38,8 +41,14 @@ ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-imag
   dtr.dev.cray.com/craypc/node-image-builder:latest ./r.sh"
 rm $(pwd)/r.sh
 
+echo "Syncing back files:"
+cat $(pwd)/rsync-back-include
 rsync -avz \
   -e "ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -i /srv/keys/node-image-builder" \
+  --include-from="$(pwd)/rsync-back-include" \
+  --exclude='*' \
   node-images-builder@172.30.86.248:~/${USERNAME}/.artifacts/ $(pwd)/.artifacts/
+
+rm $(pwd)/rsync-back-include
 
 exit 0
