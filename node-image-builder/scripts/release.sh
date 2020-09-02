@@ -5,7 +5,7 @@ set -e
 image_name="$1"
 git_commit="$2"
 release_version="$3"
-google_cloud_project="$4"
+google_cloud_project="vshasta-cray"
 
 if [ -z "$image_name" ]; then
   echo "Error: first argument to the release script should be the name of the image"

@@ -1,0 +1,49 @@
+FROM google/cloud-sdk:latest
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PACKER_VERSION=1.6.1
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    wget \
+    libcurl4 \
+    libvpx5 \
+    procps \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN buildDeps=' \
+		curl \
+		gnupg \
+	  ' \
+  	&& set -x \
+  	&& mkdir -p /etc/xdg/QtProject \
+  	&& apt-get update -y && apt-get install -y $buildDeps --no-install-recommends \
+  	&& rm -rf /var/lib/apt/lists/* \
+  	&& curl -sSL https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add - \
+  	&& echo "deb http://download.virtualbox.org/virtualbox/debian buster contrib" >> /etc/apt/sources.list.d/virtualbox.list \
+  	&& apt-get update && apt-get install -y \
+  	virtualbox-6.0 \
+  	--no-install-recommends \
+  	&& apt-get purge -y --auto-remove $buildDeps
+
+RUN apt-get update && apt-get install -y \
+  unzip \
+  ansible \
+  gettext \
+  qemu-system \
+  qemu \
+  jq \
+  rsync
+
+RUN (wget -qO- https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip | unzip -d /usr/local/bin/ -) && \
+    chmod +x /usr/local/bin/packer
+
+COPY scripts/* /srv/
+RUN chmod +x /srv/*.sh
+
+RUN mkdir -p /srv/keys
+COPY keys/node-image-builder /srv/keys/
+RUN chmod 0600 /srv/keys/*
+
+ENTRYPOINT [""]
