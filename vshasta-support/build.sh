@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker build -t dtr.dev.cray.com/craypc/vshasta-support:latest .
+docker build -t arti.dev.cray.com/csm-internal-docker-stable-local/craypc/vshasta-support:latest .
 if [[ "$1" == "push" ]]; then
-  docker push dtr.dev.cray.com/craypc/vshasta-support:latest
+  docker push arti.dev.cray.com/csm-internal-docker-stable-local/craypc/vshasta-support:latest
 fi

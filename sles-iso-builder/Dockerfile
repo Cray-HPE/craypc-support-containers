@@ -1,4 +1,4 @@
-FROM dtr.dev.cray.com/baseos/sles15sp1:latest AS base
+FROM arti.dev.cray.com/baseos-docker-master-local/sles15sp1:sles15sp1-build411 AS base
 
 RUN zypper --non-interactive ar -G http://download.buildservice.us.cray.com/devel:/languages:/go/SLE_15_SP1/ SLE_15_SP1_GO
 

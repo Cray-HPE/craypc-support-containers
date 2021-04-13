@@ -1,4 +1,4 @@
-FROM dtr.dev.cray.com/cray/cray-kiwi:latest
+FROM arti.dev.cray.com/csm-internal-docker-stable-local/cray/cray-kiwi:latest
 
 RUN zypper in -y qemu
 
